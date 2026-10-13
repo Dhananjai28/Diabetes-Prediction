@@ -1,0 +1,22 @@
+/*
+profile.css
+------------
+Page-specific tweaks for the patient profile create/edit form.
+Section cards and derived-field displays are styled by theme.css.
+*/
+
+#ageDisplay, #bmiDisplay {
+  min-height: 1.5rem;
+}
+
+.profile-legend-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.15rem 0.6rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+.profile-legend-badge.bg-blue { background: var(--primary-bg); color: var(--primary-color); }
+.profile-legend-badge.bg-teal { background: var(--secondary-bg); color: var(--secondary-color); }

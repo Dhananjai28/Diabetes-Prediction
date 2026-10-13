@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Reports - DiabetesCare AI{% endblock %}
+{% block page_title %}<i class="bi bi-file-earmark-pdf" aria-hidden="true"></i> Reports{% endblock %}
+{% block page_subtitle %}Generate branded PDF reports of your prediction history.{% endblock %}
+
+{% set risk_text = {'Green': 'Low Risk', 'Yellow': 'Medium Risk', 'Red': 'High Risk'} %}
+
+{% block content %}
+<div class="row g-4">
+  <div class="col-lg-5">
+    <div class="card app-card h-100">
+      <div class="card-body d-flex flex-column">
+        <div class="stat-icon icon-blue mb-3" style="width:56px;height:56px;font-size:1.6rem;"><i class="bi bi-file-earmark-medical" aria-hidden="true"></i></div>
+        <h5 class="fw-bold">Full History Report</h5>
+        <p class="text-muted">Download a complete PDF covering your entire prediction history, including patient information, charts, and clinical inputs.</p>
+        <a href="{{ url_for('reports.download_history_pdf') }}" class="btn btn-primary mt-auto">
+          <i class="bi bi-download" aria-hidden="true"></i> Download Full History PDF
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-7">
+    <div class="card app-card h-100">
+      <div class="card-body">
+        <h6 class="card-title"><i class="bi bi-files" aria-hidden="true"></i> Individual Prediction Reports</h6>
+        {% if rows %}
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead><tr><th>Date</th><th>Prediction</th><th>Risk</th><th class="text-end">Report</th></tr></thead>
+            <tbody>
+              {% for row in rows %}
+              <tr>
+                <td class="text-nowrap">{{ row.created_at }}</td>
+                <td>{{ row.prediction }}</td>
+                <td><span class="risk-badge risk-{{ row.risk_level|lower }}">{{ risk_text.get(row.risk_level, row.risk_level) }}</span></td>
+                <td class="text-end">
+                  <a href="{{ url_for('reports.download_prediction_pdf', record_id=row.id) }}" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-file-earmark-pdf" aria-hidden="true"></i> Download PDF
+                  </a>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+          <i class="bi bi-files" aria-hidden="true"></i>
+          <p class="mb-0">No predictions yet. <a href="{{ url_for('prediction.new') }}">Make your first prediction</a>.</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

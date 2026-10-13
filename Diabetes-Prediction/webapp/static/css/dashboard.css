@@ -1,0 +1,21 @@
+/*
+dashboard.css
+--------------
+Page-specific tweaks for the Dashboard. The design system and shared
+components (hero card, stat cards, charts, tables) live in theme.css;
+this file only adjusts chart sizing and small dashboard details.
+*/
+
+#riskDistributionChart,
+#predictionTrendChart {
+  max-height: 240px;
+}
+
+.chart-wrap {
+  height: 250px;
+}
+
+.dashboard-empty-hint {
+  color: var(--color-muted);
+  font-size: 0.9rem;
+}

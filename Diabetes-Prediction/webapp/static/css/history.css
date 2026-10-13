@@ -1,0 +1,24 @@
+/*
+history.css
+------------
+Page-specific tweaks for the searchable History page and its
+Probability chart. Filters and risk chips are styled by theme.css.
+*/
+
+#probabilityChart {
+  max-height: 190px;
+}
+
+.risk-filter-dropdown {
+  min-width: 150px;
+}
+
+@media (max-width: 575.98px) {
+  .filter-bar .form-control,
+  .filter-bar .form-select {
+    width: 100%;
+  }
+  .filter-bar .search-input {
+    flex: 1 1 100%;
+  }
+}

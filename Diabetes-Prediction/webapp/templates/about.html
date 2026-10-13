@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}About - DiabetesCare AI{% endblock %}
+{% block page_title %}<i class="bi bi-info-circle" aria-hidden="true"></i> About This Project{% endblock %}
+{% block page_subtitle %}How the machine-learning model and this application work.{% endblock %}
+
+{% block content %}
+<div class="card app-card">
+  <div class="card-body">
+    <div class="d-flex align-items-center gap-3 mb-4">
+      <div class="stat-icon icon-blue" style="width:54px;height:54px;font-size:1.5rem;"><i class="bi bi-cpu" aria-hidden="true"></i></div>
+      <div>
+        <h5 class="mb-1">Machine-Learning Powered Prediction</h5>
+        <div class="text-muted small">DiabetesCare AI</div>
+      </div>
+    </div>
+
+    <p>
+      This application predicts a patient's likelihood of diabetes using a
+      machine-learning model trained on the Pima Indians Diabetes Dataset.
+      Six classifiers (Logistic Regression, Decision Tree, Random Forest,
+      SVM, KNN, and Gradient Boosting) were trained and compared; the
+      best-performing model by F1 score is used for live predictions.
+    </p>
+    <p>
+      This web application shares the exact same database, trained model,
+      validation rules, and PDF report generator as the desktop
+      (CustomTkinter) version of this app — both are simply different
+      interfaces onto the same backend.
+    </p>
+
+    <div class="row g-3 my-3">
+      <div class="col-md-6">
+        <div class="profile-section h-100">
+          <h6 class="section-title"><i class="bi bi-stack" aria-hidden="true"></i> Tech Stack</h6>
+          <p class="mb-0 text-muted">Python, Flask, Flask-Login, scikit-learn, Pandas, NumPy, Bootstrap 5, Chart.js, SQLite.</p>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="profile-section h-100">
+          <h6 class="section-title"><i class="bi bi-shield-check" aria-hidden="true"></i> Important Note</h6>
+          <p class="mb-0 text-muted">
+            This tool is for educational and portfolio purposes only and is not a
+            substitute for professional medical diagnosis.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

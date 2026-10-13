@@ -1,0 +1,53 @@
+/*
+style.css
+---------
+Legacy-layout helpers and compatibility rules.
+
+The centralized design system (design tokens, colors, spacing, and every
+shared component) now lives in theme.css, loaded before this file. This
+file only keeps a few helpers referenced by older templates/markup and a
+couple of global niceties that don't belong in the design system.
+*/
+
+/* Data readouts (also defined in theme.css; kept here for safety) */
+.data-font {
+  font-family: var(--font-data, "Consolas", monospace);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+/* Legacy app-shell layout (no longer used by the top-nav templates,
+   retained so any cached/older markup degrades gracefully) */
+.app-shell { display: flex; min-height: 100vh; }
+.app-main { flex-grow: 1; display: flex; flex-direction: column; min-width: 0; }
+.app-topbar {
+  background: var(--card-color);
+  border-bottom: 1px solid var(--border-color);
+  padding: 0.85rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.topbar-title { font-weight: 700; font-size: 1.1rem; }
+.topbar-user { margin-left: auto; color: var(--muted-color); font-size: 0.9rem; }
+
+/* Patient profile info grids */
+.profile-field-grid .field-label,
+.profile-field-grid-sm .field-label {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--muted-color);
+  margin-top: 0.5rem;
+}
+.profile-field-grid > div,
+.profile-field-grid-sm > div {
+  padding: 0.35rem 0;
+}
+
+/* Prevent horizontal overflow on small screens for any legacy table rows */
+@media (max-width: 767.98px) {
+  .btn-group-sm .btn { font-size: 0.72rem; padding: 0.25rem 0.4rem; }
+}

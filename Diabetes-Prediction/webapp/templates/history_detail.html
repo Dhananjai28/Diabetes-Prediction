@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}Prediction Details - DiabetesCare AI{% endblock %}
+{% block page_title %}<i class="bi bi-file-text" aria-hidden="true"></i> Prediction Details{% endblock %}
+{% block page_subtitle %}Full clinical record for a single prediction.{% endblock %}
+
+{% set risk_text = {'Green': 'Low Risk', 'Yellow': 'Medium Risk', 'Red': 'High Risk'} %}
+
+{% block content %}
+<div class="row g-4">
+  <div class="col-lg-7">
+    {% if profile_row %}
+    <div class="card app-card mb-4">
+      <div class="card-body">
+        <h6 class="card-title"><i class="bi bi-person-vcard" aria-hidden="true"></i> Patient Information</h6>
+        <div class="row g-0">
+          <div class="col-6 col-md-3"><div class="info-item"><span class="field-label">Name</span><span class="field-value">{{ profile_row.patient_name }}</span></div></div>
+          <div class="col-6 col-md-3"><div class="info-item"><span class="field-label">Gender</span><span class="field-value">{{ profile_row.gender }}</span></div></div>
+          <div class="col-6 col-md-3"><div class="info-item"><span class="field-label">Age</span><span class="field-value data">{{ profile_row.age }}</span></div></div>
+          <div class="col-6 col-md-3"><div class="info-item"><span class="field-label">Blood Group</span><span class="field-value">{{ profile_row.blood_group }}</span></div></div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="card app-card mb-4">
+      <div class="card-body">
+        <div class="d-flex flex-wrap align-items-center gap-3">
+          <div class="stat-icon {{ 'icon-green' if row.risk_level == 'Green' else ('icon-yellow' if row.risk_level == 'Yellow' else 'icon-red') }}"><i class="bi bi-shield-exclamation" aria-hidden="true"></i></div>
+          <div>
+            <h6 class="card-title mb-1">Prediction: {{ row.prediction }}</h6>
+            <div class="text-muted small">Recorded: {{ row.created_at }}</div>
+          </div>
+          <span class="risk-badge risk-pill-lg risk-{{ row.risk_level|lower }} ms-auto">{{ risk_text.get(row.risk_level, row.risk_level) }}</span>
+        </div>
+        <div class="mt-3 fs-5">
+          Diabetes Probability: <span class="data-font">{{ "%.1f"|format(row.probability * 100) }}%</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card app-card mb-4">
+      <div class="card-body">
+        <h6 class="card-title"><i class="bi bi-sliders" aria-hidden="true"></i> Clinical Inputs</h6>
+        <div class="table-responsive">
+          <table class="table table-sm">
+            <tbody>
+              {% for field, value in inputs.items() %}
+              <tr><td class="text-muted">{{ field }}</td><td class="text-end data-font">{{ value }}</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="card app-card">
+      <div class="card-body">
+        <h6 class="card-title"><i class="bi bi-lightbulb" aria-hidden="true"></i> Recommendations</h6>
+        <ul class="mb-0 ps-3">
+          {% for tip in suggestions %}
+          <li class="mb-2">{{ tip }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-5">
+    <div class="card app-card mb-4">
+      <div class="card-body text-center">
+        <h6 class="card-title text-start"><i class="bi bi-speedometer2" aria-hidden="true"></i> Probability Gauge</h6>
+        <img src="data:image/png;base64,{{ gauge_image }}" class="img-fluid" alt="Probability gauge chart">
+      </div>
+    </div>
+    <div class="card app-card mb-4">
+      <div class="card-body text-center">
+        <h6 class="card-title text-start"><i class="bi bi-diagram-3" aria-hidden="true"></i> Feature Profile</h6>
+        <img src="data:image/png;base64,{{ feature_image }}" class="img-fluid" alt="Feature profile chart">
+      </div>
+    </div>
+
+    <div class="d-grid gap-2">
+      <a href="{{ url_for('reports.download_prediction_pdf', record_id=row.id) }}" class="btn btn-primary">
+        <i class="bi bi-file-earmark-pdf" aria-hidden="true"></i> Generate PDF Report
+      </a>
+      <div class="d-flex gap-2">
+        <form method="POST" action="{{ url_for('history.delete', record_id=row.id) }}" onsubmit="return confirm('Delete this prediction record?');" class="flex-grow-1">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="btn btn-outline-danger w-100">Delete</button>
+        </form>
+        <a href="{{ url_for('history.list_view') }}" class="btn btn-outline-secondary flex-grow-1">Back to History</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Register - DiabetesCare AI{% endblock %}
+{% block guest_content %}
+<div class="auth-page">
+  <!-- Branding panel -->
+  <section class="auth-panel" aria-label="About DiabetesCare AI">
+    <div class="auth-panel-content">
+      <span class="logo-mark" aria-hidden="true"><i class="bi bi-heart-pulse"></i></span>
+      <h1>DiabetesCare AI</h1>
+      <p class="auth-panel-tagline">Diabetes Prediction &amp; Patient Management</p>
+      <p class="auth-panel-desc">
+        Create a free patient portal account to store your profile, run diabetes
+        risk predictions, track your history, and download clinical PDF reports.
+      </p>
+      <ul class="auth-features">
+        <li><i class="bi bi-person-lock" aria-hidden="true"></i> Your data stays private to your account</li>
+        <li><i class="bi bi-activity" aria-hidden="true"></i> Track risk trends over time</li>
+        <li><i class="bi bi-file-earmark-medical" aria-hidden="true"></i> Export a full PDF history report</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Registration form -->
+  <section class="auth-form-side">
+    <div class="auth-card">
+      <div class="auth-brand">
+        <h1>Create Account</h1>
+        <p>Set up your patient portal login</p>
+      </div>
+
+      <form method="POST" action="{{ url_for('auth.register') }}" id="registerForm">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="mb-3">
+          <label class="form-label" for="username">Username</label>
+          <div class="input-icon-wrap">
+            <i class="bi bi-person" aria-hidden="true"></i>
+            <input type="text" class="form-control" id="username" name="username"
+                   value="{{ form_values.username or '' }}" required autofocus>
+          </div>
+          <div class="form-hint">3-20 characters: letters, numbers, underscore only.</div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="email">Email</label>
+          <div class="input-icon-wrap">
+            <i class="bi bi-envelope" aria-hidden="true"></i>
+            <input type="email" class="form-control" id="email" name="email"
+                   value="{{ form_values.email or '' }}" required>
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="password">Password</label>
+          <div class="input-icon-wrap">
+            <i class="bi bi-lock" aria-hidden="true"></i>
+            <input type="password" class="form-control" id="password" name="password" required>
+          </div>
+          <div class="form-hint">At least 8 characters, one uppercase letter, one digit.</div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="confirm_password">Confirm Password</label>
+          <div class="input-icon-wrap">
+            <i class="bi bi-lock-fill" aria-hidden="true"></i>
+            <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="security_answer">Security answer: your city of birth</label>
+          <input type="text" class="form-control" id="security_answer" name="security_answer" required>
+          <div class="form-hint">Used to recover your password if you forget it.</div>
+        </div>
+        <button type="submit" class="btn btn-primary w-100" id="registerBtn">Register</button>
+        <div class="auth-links justify-content-center">
+          <a href="{{ url_for('auth.login') }}">Already have an account? Login</a>
+        </div>
+      </form>
+    </div>
+  </section>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+  document.getElementById("registerForm")?.addEventListener("submit", function () {
+    var btn = document.getElementById("registerBtn");
+    if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Creating account...'; }
+  });
+</script>
+{% endblock %}

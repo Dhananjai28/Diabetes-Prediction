@@ -1,0 +1,123 @@
+{
+  "best_model": "Gradient Boosting",
+  "feature_order": [
+    "Pregnancies",
+    "Glucose",
+    "BloodPressure",
+    "SkinThickness",
+    "Insulin",
+    "BMI",
+    "DiabetesPedigreeFunction",
+    "Age"
+  ],
+  "models": [
+    {
+      "name": "Logistic Regression",
+      "accuracy": 0.7792,
+      "precision": 0.75,
+      "recall": 0.5556,
+      "f1": 0.6383,
+      "roc_auc": 0.7935,
+      "confusion_matrix": [
+        [
+          90,
+          10
+        ],
+        [
+          24,
+          30
+        ]
+      ]
+    },
+    {
+      "name": "Decision Tree",
+      "accuracy": 0.6948,
+      "precision": 0.5897,
+      "recall": 0.4259,
+      "f1": 0.4946,
+      "roc_auc": 0.6719,
+      "confusion_matrix": [
+        [
+          84,
+          16
+        ],
+        [
+          31,
+          23
+        ]
+      ]
+    },
+    {
+      "name": "Random Forest",
+      "accuracy": 0.7532,
+      "precision": 0.75,
+      "recall": 0.4444,
+      "f1": 0.5581,
+      "roc_auc": 0.8189,
+      "confusion_matrix": [
+        [
+          92,
+          8
+        ],
+        [
+          30,
+          24
+        ]
+      ]
+    },
+    {
+      "name": "Support Vector Machine",
+      "accuracy": 0.7857,
+      "precision": 0.7692,
+      "recall": 0.5556,
+      "f1": 0.6452,
+      "roc_auc": 0.8176,
+      "confusion_matrix": [
+        [
+          91,
+          9
+        ],
+        [
+          24,
+          30
+        ]
+      ]
+    },
+    {
+      "name": "K-Nearest Neighbours",
+      "accuracy": 0.7532,
+      "precision": 0.7353,
+      "recall": 0.463,
+      "f1": 0.5682,
+      "roc_auc": 0.7956,
+      "confusion_matrix": [
+        [
+          91,
+          9
+        ],
+        [
+          29,
+          25
+        ]
+      ]
+    },
+    {
+      "name": "Gradient Boosting",
+      "accuracy": 0.7792,
+      "precision": 0.7381,
+      "recall": 0.5741,
+      "f1": 0.6458,
+      "roc_auc": 0.8026,
+      "confusion_matrix": [
+        [
+          89,
+          11
+        ],
+        [
+          23,
+          31
+        ]
+      ]
+    }
+  ]
+}

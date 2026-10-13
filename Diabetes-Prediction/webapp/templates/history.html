@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %}History - DiabetesCare AI{% endblock %}
+{% block page_title %}<i class="bi bi-clock-history" aria-hidden="true"></i> Prediction History{% endblock %}
+{% block page_subtitle %}Search, filter, review, export or delete your past predictions.{% endblock %}
+{% block extra_css %}<link href="{{ url_for('static', filename='css/history.css') }}" rel="stylesheet">{% endblock %}
+
+{% set risk_text = {'Green': 'Low Risk', 'Yellow': 'Medium Risk', 'Red': 'High Risk'} %}
+
+{% block content %}
+<!-- Filter / action bar -->
+<div class="card app-card mb-4">
+  <div class="card-body">
+    <form method="GET" action="{{ url_for('history.list_view') }}" class="filter-bar" role="search" aria-label="Filter prediction history">
+      <div class="search-input position-relative">
+        <i class="bi bi-search position-absolute" style="left:0.85rem;top:50%;transform:translateY(-50%);color:var(--muted-color);" aria-hidden="true"></i>
+        <input type="text" class="form-control" name="q" placeholder="Search predictions, risk or date..." value="{{ search }}" style="padding-left:2.4rem;" aria-label="Search predictions">
+      </div>
+      <select class="form-select risk-filter-dropdown" id="riskFilter" aria-label="Filter by risk level">
+        <option value="all">All risk levels</option>
+        <option value="Green">Low Risk</option>
+        <option value="Yellow">Medium Risk</option>
+        <option value="Red">High Risk</option>
+      </select>
+      <div class="position-relative">
+        <i class="bi bi-calendar3 position-absolute" style="left:0.85rem;top:50%;transform:translateY(-50%);color:var(--muted-color);pointer-events:none;" aria-hidden="true"></i>
+        <input type="date" class="form-control" id="dateFilter" aria-label="Filter by date" style="padding-left:2.4rem;">
+      </div>
+      <button type="submit" class="btn btn-outline-primary">Search</button>
+      <a href="{{ url_for('reports.download_history_pdf') }}" class="btn btn-primary ms-auto">
+        <i class="bi bi-file-earmark-pdf" aria-hidden="true"></i> Export Full PDF
+      </a>
+      <form method="POST" action="{{ url_for('history.clear_all') }}" onsubmit="return confirm('Delete all prediction history? This cannot be undone.');" class="d-inline">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn btn-outline-danger"><i class="bi bi-trash3" aria-hidden="true"></i> Clear All</button>
+      </form>
+    </form>
+  </div>
+</div>
+
+{% if rows %}
+<!-- Probability chart -->
+<div class="card app-card mb-4">
+  <div class="card-body">
+    <h6 class="card-title"><i class="bi bi-bar-chart" aria-hidden="true"></i> Probability Chart</h6>
+    <canvas id="probabilityChart" role="img" aria-label="Prediction probability over time"></canvas>
+  </div>
+</div>
+{% endif %}
+
+<!-- Records -->
+<div class="card app-card">
+  <div class="card-body">
+    {% if rows %}
+    <div class="table-responsive">
+      <table class="table table-hover align-middle" id="historyTable">
+        <thead><tr><th>Date</th><th>Prediction</th><th>Probability</th><th>Risk</th><th class="text-end">Actions</th></tr></thead>
+        <tbody>
+          {% for row in rows %}
+          <tr data-risk="{{ row.risk_level }}" data-date="{{ row.created_at.split(' ')[0] }}">
+            <td class="text-nowrap">{{ row.created_at }}</td>
+            <td>{{ row.prediction }}</td>
+            <td class="data-font">{{ "%.1f"|format(row.probability * 100) }}%</td>
+            <td><span class="risk-badge risk-{{ row.risk_level|lower }}">{{ risk_text.get(row.risk_level, row.risk_level) }}</span></td>
+            <td class="text-end">
+              <div class="d-inline-flex flex-wrap gap-1 justify-content-end">
+                <a href="{{ url_for('history.detail', record_id=row.id) }}" class="btn btn-sm btn-outline-primary">View Details</a>
+                <a href="{{ url_for('reports.download_prediction_pdf', record_id=row.id) }}" class="btn btn-sm btn-soft-primary">Generate PDF</a>
+                <form method="POST" action="{{ url_for('history.delete', record_id=row.id) }}" onsubmit="return confirm('Delete this prediction record?');" class="d-inline">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="empty-state d-none" id="historyEmpty">
+      <i class="bi bi-funnel" aria-hidden="true"></i>
+      <p class="mb-0">No records match the current filters.</p>
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <i class="bi bi-inbox" aria-hidden="true"></i>
+      <p class="mb-0">No prediction history {{ 'matching "' + search + '"' if search else 'yet' }}.</p>
+      {% if not search %}<a href="{{ url_for('prediction.new') }}" class="btn btn-primary btn-sm mt-2">Make your first prediction</a>{% endif %}
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  window.HISTORY_DATA = {
+    labels: {{ rows|map(attribute='created_at')|list|tojson }},
+    probabilities: {{ rows|map(attribute='probability')|list|tojson }}
+  };
+</script>
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+<script src="{{ url_for('static', filename='js/history.js') }}"></script>
+{% endblock %}

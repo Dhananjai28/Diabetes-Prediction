@@ -1,0 +1,23 @@
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="toast-container position-fixed top-0 end-0 p-3" aria-live="polite" aria-atomic="true">
+      {% for category, message in messages %}
+        {% set cat = 'info' if category == 'message' else category %}
+        {% set icon = {'success': 'check-circle-fill', 'danger': 'exclamation-triangle-fill', 'warning': 'exclamation-circle-fill', 'info': 'info-circle-fill'}[cat] %}
+        <div class="toast app-toast toast-{{ cat }} show" role="status">
+          <div class="toast-header">
+            <i class="bi bi-{{ icon }}" aria-hidden="true"></i>
+            <strong class="me-auto">
+              {% if cat == 'success' %}Success
+              {% elif cat == 'danger' %}Error
+              {% elif cat == 'warning' %}Notice
+              {% else %}Info{% endif %}
+            </strong>
+            <button type="button" class="btn-close" data-toast-close aria-label="Close"></button>
+          </div>
+          <div class="toast-body">{{ message }}</div>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}

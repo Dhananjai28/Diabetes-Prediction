@@ -1,0 +1,244 @@
+{% extends "base.html" %}
+{% block title %}Overview - DiabetesCare AI{% endblock %}
+{% block page_title %}<i class="bi bi-grid-1x2" aria-hidden="true"></i> Overview{% endblock %}
+{% block page_subtitle %}Your diabetes prediction health summary at a glance.{% endblock %}
+{% block extra_css %}<link href="{{ url_for('static', filename='css/dashboard.css') }}" rel="stylesheet">{% endblock %}
+
+{% set risk_text = {'Green': 'Low Risk', 'Yellow': 'Medium Risk', 'Red': 'High Risk'} %}
+
+{% block content %}
+{% if model_error %}
+<div class="alert alert-warning d-flex align-items-center gap-2 mb-4" role="alert">
+  <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+  <div>Model not found: {{ model_error }}. Run <code>python model/train_model.py</code> first.</div>
+</div>
+{% endif %}
+
+<!-- Welcome hero -->
+<section class="hero-card mb-4" aria-label="Welcome">
+  <div>
+    <h1 id="greetingText">Welcome back{% if profile %}, {{ profile.patient_name.split(' ')[0] }}{% endif %}</h1>
+    <p class="hero-subtitle">Manage your health information and diabetes prediction history. Run a quick risk assessment below.</p>
+    <div class="pulse-line" aria-hidden="true">
+      <svg viewBox="0 0 420 26" preserveAspectRatio="none">
+        <polyline points="0,13 40,13 70,13 84,13 92,4 104,22 116,9 128,13 160,13 210,13 240,13 254,13 262,4 274,22 286,9 298,13 330,13 420,13" />
+      </svg>
+    </div>
+  </div>
+  <div class="hero-actions">
+    <a href="{{ url_for('prediction.new') }}" class="btn btn-light">
+      <i class="bi bi-clipboard2-pulse" aria-hidden="true"></i> New Prediction
+    </a>
+    <a href="{{ url_for('history.list_view') }}" class="btn btn-outline-light">
+      <i class="bi bi-clock-history" aria-hidden="true"></i> View History
+    </a>
+  </div>
+</section>
+
+{% if not profile %}
+<div class="card app-card mb-4">
+  <div class="card-body">
+    <div class="d-flex align-items-center gap-3">
+      <div class="stat-icon icon-teal"><i class="bi bi-person-plus" aria-hidden="true"></i></div>
+      <div>
+        <h5 class="mb-1">Complete Your Profile</h5>
+        <p class="text-muted mb-0">Add your patient details to personalize your dashboard and reports.</p>
+      </div>
+      <a href="{{ url_for('patient.edit') }}" class="btn btn-primary ms-auto flex-shrink-0">Complete Profile</a>
+    </div>
+  </div>
+</div>
+{% else %}
+<!-- Patient information + stats -->
+<div class="row g-4 mb-4">
+  <div class="col-lg-4">
+    <div class="card app-card h-100">
+      <div class="card-body">
+        <h6 class="card-title"><i class="bi bi-person-vcard" aria-hidden="true"></i> Patient Information</h6>
+        <div class="d-flex align-items-center gap-3 mb-4">
+          <div class="avatar-circle avatar-circle-lg">{{ profile.initials() }}</div>
+          <div>
+            <div class="fw-bold fs-5">{{ profile.patient_name }}</div>
+            <div class="text-muted small">{{ profile.gender }} &middot; {{ profile.age }} years &middot; {{ profile.blood_group }}</div>
+          </div>
+        </div>
+        <div class="info-grid">
+          <div class="row g-0">
+            <div class="col-6">
+              <div class="info-item">
+                <span class="field-label">Age</span>
+                <span class="field-value data">{{ profile.age }}</span>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="info-item">
+                <span class="field-label">BMI</span>
+                <span class="field-value data">{{ profile.bmi }}</span>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="info-item">
+                <span class="field-label">Blood Group</span>
+                <span class="field-value">{{ profile.blood_group }}</span>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="info-item">
+                <span class="field-label">Phone</span>
+                <span class="field-value">{{ profile.phone }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <a href="{{ url_for('patient.edit') }}" class="btn btn-soft-primary w-100 mt-3">
+          <i class="bi bi-pencil-square" aria-hidden="true"></i> Edit Profile
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-8">
+    <div class="row g-4 h-100">
+      <div class="col-6 col-md-6">
+        <div class="card app-card stat-card">
+          <div class="card-body">
+            <div class="stat-icon icon-blue"><i class="bi bi-clipboard2-pulse" aria-hidden="true"></i></div>
+            <div>
+              <div class="stat-value data-font">{{ total }}</div>
+              <div class="stat-label">Total Predictions</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-6">
+        <div class="card app-card stat-card">
+          <div class="card-body">
+            <div class="stat-icon {{ 'icon-green' if latest and latest.risk_level == 'Green' else ('icon-yellow' if latest and latest.risk_level == 'Yellow' else 'icon-red') }}"><i class="bi bi-shield-exclamation" aria-hidden="true"></i></div>
+            <div>
+              <div class="stat-value">
+                {% if latest %}
+                  <span class="risk-badge risk-{{ latest.risk_level|lower }}">{{ risk_text.get(latest.risk_level, latest.risk_level) }}</span>
+                {% else %}N/A{% endif %}
+              </div>
+              <div class="stat-label">Latest Risk Level</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-6">
+        <div class="card app-card stat-card">
+          <div class="card-body">
+            <div class="stat-icon icon-teal"><i class="bi bi-graph-up-arrow" aria-hidden="true"></i></div>
+            <div>
+              <div class="stat-value data-font">{{ "%.1f"|format(avg_probability) }}%</div>
+              <div class="stat-label">Average Probability</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-6">
+        <div class="card app-card stat-card">
+          <div class="card-body">
+            <div class="stat-icon icon-yellow"><i class="bi bi-calendar3" aria-hidden="true"></i></div>
+            <div>
+              <div class="stat-value data-font" style="font-size:1.1rem;">{{ latest.created_at.split(' ')[0] if latest else 'N/A' }}</div>
+              <div class="stat-label">Last Prediction</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- Charts -->
+<div class="row g-4 mb-4">
+  <div class="col-lg-6">
+    <div class="card app-card h-100">
+      <div class="card-body">
+        <h6 class="card-title"><i class="bi bi-pie-chart" aria-hidden="true"></i> Risk Distribution</h6>
+        <div class="chart-wrap">
+          <canvas id="riskDistributionChart" role="img" aria-label="Distribution of prediction risk levels"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card app-card h-100">
+      <div class="card-body">
+        <h6 class="card-title"><i class="bi bi-graph-up" aria-hidden="true"></i> Prediction Trend</h6>
+        <div class="chart-wrap">
+          <canvas id="predictionTrendChart" role="img" aria-label="Probability trend over recent predictions"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Recent history + quick actions -->
+<div class="row g-4">
+  <div class="col-lg-8">
+    <div class="card app-card h-100">
+      <div class="card-body">
+        <div class="d-flex align-items-center mb-3">
+          <h6 class="card-title mb-0"><i class="bi bi-clock-history" aria-hidden="true"></i> Recent Predictions</h6>
+          <a href="{{ url_for('history.list_view') }}" class="btn btn-sm btn-soft-primary ms-auto">View All</a>
+        </div>
+        {% if recent_history %}
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead><tr><th>Date</th><th>Prediction</th><th>Probability</th><th>Risk</th><th class="text-end">Detail</th></tr></thead>
+            <tbody>
+              {% for row in recent_history %}
+              <tr>
+                <td class="text-nowrap">{{ row.created_at }}</td>
+                <td>{{ row.prediction }}</td>
+                <td class="data-font">{{ "%.1f"|format(row.probability * 100) }}%</td>
+                <td><span class="risk-badge risk-{{ row.risk_level|lower }}">{{ risk_text.get(row.risk_level, row.risk_level) }}</span></td>
+                <td class="text-end">
+                  <a href="{{ url_for('history.detail', record_id=row.id) }}" class="btn btn-sm btn-outline-primary">View</a>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+          <i class="bi bi-inbox" aria-hidden="true"></i>
+          <p class="mb-1">No predictions yet.</p>
+          <a href="{{ url_for('prediction.new') }}" class="btn btn-primary btn-sm">Make your first prediction</a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card app-card h-100">
+      <div class="card-body">
+        <h6 class="card-title"><i class="bi bi-lightning-charge" aria-hidden="true"></i> Quick Actions</h6>
+        <div class="d-grid gap-2">
+          <a href="{{ url_for('prediction.new') }}" class="btn btn-primary"><i class="bi bi-clipboard2-pulse" aria-hidden="true"></i> New Prediction</a>
+          <a href="{{ url_for('history.list_view') }}" class="btn btn-outline-secondary"><i class="bi bi-clock-history" aria-hidden="true"></i> Prediction History</a>
+          <a href="{{ url_for('reports.picker') }}" class="btn btn-outline-secondary"><i class="bi bi-file-earmark-pdf" aria-hidden="true"></i> Generate Full Report</a>
+          <a href="{{ url_for('patient.edit') }}" class="btn btn-outline-secondary"><i class="bi bi-pencil-square" aria-hidden="true"></i> Edit Profile</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  window.DASHBOARD_DATA = {
+    riskCounts: {{ risk_counts|tojson }},
+    trendLabels: {{ trend|map(attribute='created_at')|list|tojson }},
+    trendProbabilities: {{ trend|map(attribute='probability')|list|tojson }}
+  };
+</script>
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

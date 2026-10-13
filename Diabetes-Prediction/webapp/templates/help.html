@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Help - DiabetesCare AI{% endblock %}
+{% block page_title %}<i class="bi bi-question-circle" aria-hidden="true"></i> Help{% endblock %}
+{% block page_subtitle %}Answers to common questions about using the platform.{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+  <div class="col-lg-8">
+    <div class="card app-card">
+      <div class="card-body">
+        <div class="faq-item">
+          <h6><i class="bi bi-clipboard2-pulse" aria-hidden="true"></i> How do I make a prediction?</h6>
+          <p class="text-muted mb-0">Go to <strong>New Prediction</strong>, fill in all 8 clinical fields, and click <strong>Run Diabetes Prediction</strong>.</p>
+        </div>
+        <div class="faq-item">
+          <h6><i class="bi bi-palette" aria-hidden="true"></i> What do the risk colors mean?</h6>
+          <p class="text-muted mb-0">Green = low probability, Yellow = moderate, Red = high probability of diabetes. Risk is always shown with a text label as well as a color.</p>
+        </div>
+        <div class="faq-item">
+          <h6><i class="bi bi-file-earmark-pdf" aria-hidden="true"></i> Can I download my results as a PDF?</h6>
+          <p class="text-muted mb-0">Yes — from a prediction result, History, or the Reports page, click <strong>Generate PDF</strong> / <strong>Download PDF Report</strong>.</p>
+        </div>
+        <div class="faq-item">
+          <h6><i class="bi bi-key" aria-hidden="true"></i> I forgot my password.</h6>
+          <p class="text-muted mb-0">Use <strong>Forgot password?</strong> on the login screen and answer your security question.</p>
+        </div>
+        <div class="faq-item">
+          <h6><i class="bi bi-display" aria-hidden="true"></i> Is this available as a desktop app too?</h6>
+          <p class="text-muted mb-0">Yes — run <code>python app/main.py</code> for the CustomTkinter desktop version, which shares the same database and predictions as this web app.</p>
+        </div>
+        <div class="faq-item mb-0">
+          <h6><i class="bi bi-moon-stars" aria-hidden="true"></i> How do I switch to dark mode?</h6>
+          <p class="text-muted mb-0">Use the moon/sun button in the top-right corner. Your preference is remembered on this device.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card app-card">
+      <div class="card-body">
+        <h6 class="card-title"><i class="bi bi-headset" aria-hidden="true"></i> Need More Help?</h6>
+        <p class="text-muted">Reach out with any questions about using the portal, interpreting results, or the underlying model.</p>
+        <div class="quick-actions">
+          <a href="{{ url_for('root.about') }}" class="btn btn-soft-primary"><i class="bi bi-info-circle" aria-hidden="true"></i> About the Project</a>
+          <a href="{{ url_for('dashboard.home') }}" class="btn btn-outline-secondary"><i class="bi bi-grid-1x2" aria-hidden="true"></i> Back to Overview</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

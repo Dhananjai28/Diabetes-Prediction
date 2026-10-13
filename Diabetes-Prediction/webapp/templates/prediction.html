@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+{% block title %}New Prediction - DiabetesCare AI{% endblock %}
+{% block page_title %}<i class="bi bi-clipboard2-pulse" aria-hidden="true"></i> New Prediction{% endblock %}
+{% block page_subtitle %}Enter clinical measurements to run a diabetes risk assessment.{% endblock %}
+{% block extra_css %}<link href="{{ url_for('static', filename='css/prediction.css') }}" rel="stylesheet">{% endblock %}
+
+{% set core_fields = ['Glucose', 'BloodPressure', 'BMI'] %}
+{% set risk_text = {'Green': 'Low Risk', 'Yellow': 'Medium Risk', 'Red': 'High Risk'} %}
+{% set risk_heading = {'Green': 'LOW RISK', 'Yellow': 'MEDIUM RISK', 'Red': 'HIGH RISK'} %}
+{% set field_desc = {
+  'Pregnancies': 'Number of times pregnant',
+  'Glucose': 'Plasma glucose concentration',
+  'BloodPressure': 'Diastolic blood pressure',
+  'SkinThickness': 'Triceps skin fold thickness',
+  'Insulin': '2-hour serum insulin',
+  'BMI': 'Body mass index',
+  'DiabetesPedigreeFunction': 'Family diabetes history score',
+  'Age': 'Patient age in years'
+} %}
+{% set assessment_text = {
+  'Green': 'Your prediction indicates a lower estimated likelihood of diabetes based on the entered measurements. Continue maintaining a healthy lifestyle and regular monitoring.',
+  'Yellow': 'Your prediction indicates a moderate estimated likelihood of diabetes. We recommend discussing these results with a healthcare professional and following the suggestions below.',
+  'Red': 'Your prediction indicates a higher estimated likelihood of diabetes. Please consult a healthcare professional for a proper evaluation and follow the suggestions below.'
+} %}
+{% set risk_color = {'Green': 'var(--success-color)', 'Yellow': 'var(--warning-color)', 'Red': 'var(--danger-color)'} %}
+
+{% block content %}
+<div class="row g-4">
+  <!-- Prediction form -->
+  <div class="col-lg-6">
+    <div class="card app-card mb-4">
+      <div class="card-body">
+        <h6 class="card-title"><i class="bi bi-sliders" aria-hidden="true"></i> Run a Prediction</h6>
+        <p class="text-muted small mb-0">Fill in all 8 clinical measurements. Each field accepts a clinically plausible range — your values are validated before the prediction runs.</p>
+      </div>
+    </div>
+
+    <form method="POST" action="{{ url_for('prediction.new') }}" id="predictionForm" novalidate>
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      <!-- Clinical information -->
+      <div class="form-section mb-4">
+        <div class="form-section-head">
+          <i class="bi bi-heart-pulse" aria-hidden="true"></i>
+          <div>
+            Clinical Information
+            <div class="form-section-sub">Core markers used for the assessment</div>
+          </div>
+        </div>
+        {% for field, (lo, hi, label) in feature_ranges.items() %}
+          {% if field in core_fields %}
+          <div class="mb-3">
+            <label class="form-label" for="field-{{ field }}">{{ label }}</label>
+            <div class="input-icon-wrap">
+              <i class="bi bi-activity" aria-hidden="true"></i>
+              <input type="number" step="any" class="form-control" id="field-{{ field }}" name="{{ field }}"
+                     placeholder="{{ lo }} – {{ hi }}" value="{{ values[field] if values else '' }}" required>
+            </div>
+            <div class="form-hint">{{ field_desc[field] }} · Range {{ lo }}–{{ hi }}</div>
+          </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+
+      <!-- Additional information -->
+      <div class="form-section mb-4">
+        <div class="form-section-head">
+          <i class="bi bi-journal-medical" aria-hidden="true"></i>
+          <div>
+            Additional Information
+            <div class="form-section-sub">Supporting clinical and demographic inputs</div>
+          </div>
+        </div>
+        {% for field, (lo, hi, label) in feature_ranges.items() %}
+          {% if field not in core_fields %}
+          <div class="mb-3">
+            <label class="form-label" for="field-{{ field }}">{{ label }}</label>
+            <input type="number" step="any" class="form-control" id="field-{{ field }}" name="{{ field }}"
+                   placeholder="{{ lo }} – {{ hi }}" value="{{ values[field] if values else '' }}" required>
+            <div class="form-hint">{{ field_desc[field] }} · Range {{ lo }}–{{ hi }}</div>
+          </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+
+      <button type="submit" class="btn btn-primary w-100 btn-lg" id="predictBtn">
+        <i class="bi bi-clipboard2-pulse" aria-hidden="true"></i> Run Diabetes Prediction
+      </button>
+    </form>
+  </div>
+
+  <!-- Result panel -->
+  <div class="col-lg-6">
+    {% if result %}
+    <div class="card app-card mb-4">
+      <div class="card-body">
+        <h6 class="card-title"><i class="bi bi-clipboard-check" aria-hidden="true"></i> Prediction Result</h6>
+        <div class="result-hero">
+          <span class="risk-badge risk-pill-lg risk-{{ result.risk|lower }}" style="font-size:1.15rem;">
+            {{ risk_heading.get(result.risk, result.risk) }}
+          </span>
+          <div class="text-muted small mt-2 mb-3">{{ result.label }}</div>
+
+          <div class="gauge-wrap">
+            <div class="gauge" style="--pct: {{ '%.1f'|format(result.probability * 100) }}; --gauge-color: {{ risk_color.get(result.risk, 'var(--primary-color)') }};">
+              <div class="gauge-inner">
+                <div class="gauge-num">{{ "%.1f"|format(result.probability * 100) }}%</div>
+                <div class="gauge-label">Diabetes Probability</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card app-card mb-4">
+      <div class="card-body">
+        <h6 class="card-title"><i class="bi bi-chat-square-text" aria-hidden="true"></i> Clinical Assessment</h6>
+        <p class="mb-0">{{ assessment_text.get(result.risk, 'Assessment unavailable for this risk level.') }}</p>
+      </div>
+    </div>
+
+    <div class="card app-card mb-4">
+      <div class="card-body">
+        <h6 class="card-title"><i class="bi bi-lightbulb" aria-hidden="true"></i> Recommendations</h6>
+        <ul class="mb-0 ps-3">
+          {% for tip in result.suggestions %}
+          <li class="mb-2">{{ tip }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+
+    <div class="d-grid gap-2">
+      {% if result.record_id %}
+      <a href="{{ url_for('reports.download_prediction_pdf', record_id=result.record_id) }}" class="btn btn-primary">
+        <i class="bi bi-file-earmark-pdf" aria-hidden="true"></i> Generate PDF Report
+      </a>
+      <a href="{{ url_for('history.detail', record_id=result.record_id) }}" class="btn btn-outline-secondary">
+        <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i> View Full Details
+      </a>
+      {% endif %}
+      <a href="{{ url_for('prediction.new') }}" class="btn btn-soft-primary">
+        <i class="bi bi-arrow-clockwise" aria-hidden="true"></i> Run Another Prediction
+      </a>
+    </div>
+    {% else %}
+    <div class="card app-card">
+      <div class="card-body">
+        <div class="empty-state">
+          <i class="bi bi-clipboard2-pulse" aria-hidden="true"></i>
+          <h6 class="fw-bold mb-2">Ready when you are</h6>
+          <p class="mb-0">Fill in the clinical measurements on the left and click <strong>Run Diabetes Prediction</strong> to see your risk assessment, probability gauge, and recommendations here.</p>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/prediction.js') }}"></script>
+{% endblock %}

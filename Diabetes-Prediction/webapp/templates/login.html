@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}Login - DiabetesCare AI{% endblock %}
+{% block guest_content %}
+<div class="auth-page">
+  <!-- Branding panel -->
+  <section class="auth-panel" aria-label="About DiabetesCare AI">
+    <div class="auth-panel-content">
+      <span class="logo-mark" aria-hidden="true"><i class="bi bi-heart-pulse"></i></span>
+      <h1>DiabetesCare AI</h1>
+      <p class="auth-panel-tagline">Diabetes Prediction &amp; Patient Management</p>
+      <p class="auth-panel-desc">
+        An intelligent, machine-learning based platform that estimates a patient's
+        likelihood of diabetes from clinical measurements and keeps your full
+        prediction history, patient profile, and PDF reports in one place.
+      </p>
+      <ul class="auth-features">
+        <li><i class="bi bi-shield-check" aria-hidden="true"></i> Private, secure patient portal</li>
+        <li><i class="bi bi-cpu" aria-hidden="true"></i> ML model trained on clinical data</li>
+        <li><i class="bi bi-graph-up-arrow" aria-hidden="true"></i> Risk gauges, trends &amp; PDF reports</li>
+        <li><i class="bi bi-palette" aria-hidden="true"></i> Light &amp; dark themes</li>
+      </ul>
+      <div class="pulse-line" aria-hidden="true">
+        <svg viewBox="0 0 420 26" preserveAspectRatio="none">
+          <polyline points="0,13 40,13 70,13 84,13 92,4 104,22 116,9 128,13 160,13 210,13 240,13 254,13 262,4 274,22 286,9 298,13 330,13 420,13" />
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- Login form -->
+  <section class="auth-form-side">
+    <div class="auth-card">
+      <div class="auth-brand">
+        <h1>Welcome Back</h1>
+        <p>Sign in to your patient portal</p>
+      </div>
+
+      <form method="POST" action="{{ url_for('auth.login') }}" id="loginForm" class="{{ 'd-none' if show_forgot }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="mb-3">
+          <label class="form-label" for="username">Username</label>
+          <div class="input-icon-wrap">
+            <i class="bi bi-person" aria-hidden="true"></i>
+            <input type="text" class="form-control" id="username" name="username"
+                   autocomplete="username" required autofocus>
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="password">Password</label>
+          <div class="input-icon-wrap">
+            <i class="bi bi-lock" aria-hidden="true"></i>
+            <input type="password" class="form-control" id="password" name="password"
+                   autocomplete="current-password" required>
+          </div>
+        </div>
+        <div class="form-check mb-3">
+          <input class="form-check-input" type="checkbox" id="rememberMe" name="remember_me">
+          <label class="form-check-label" for="rememberMe">Remember me</label>
+        </div>
+        <button type="submit" class="btn btn-primary w-100" id="loginBtn">Login</button>
+        <div class="auth-links">
+          <a href="#" id="showForgotLink">Forgot password?</a>
+          <a href="{{ url_for('auth.register') }}">Create account</a>
+        </div>
+      </form>
+
+      <form method="POST" action="{{ url_for('auth.forgot_password') }}" id="forgotForm" class="{{ '' if show_forgot else 'd-none' }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <h2 class="h5 mb-3">Reset Password</h2>
+        <div class="mb-3">
+          <label class="form-label" for="fp_username">Username</label>
+          <input type="text" class="form-control" id="fp_username" name="username" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="security_answer">Security answer: your city of birth</label>
+          <input type="text" class="form-control" id="security_answer" name="security_answer" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="new_password">New password</label>
+          <input type="password" class="form-control" id="new_password" name="new_password" required>
+        </div>
+        <button type="submit" class="btn btn-teal w-100">Reset Password</button>
+        <div class="auth-links">
+          <a href="#" id="backToLoginLink"><i class="bi bi-arrow-left me-1"></i>Back to login</a>
+        </div>
+      </form>
+    </div>
+  </section>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+  document.getElementById("showForgotLink")?.addEventListener("click", function (e) {
+    e.preventDefault();
+    document.getElementById("loginForm").classList.add("d-none");
+    document.getElementById("forgotForm").classList.remove("d-none");
+  });
+  document.getElementById("backToLoginLink")?.addEventListener("click", function (e) {
+    e.preventDefault();
+    document.getElementById("forgotForm").classList.add("d-none");
+    document.getElementById("loginForm").classList.remove("d-none");
+  });
+</script>
+{% endblock %}

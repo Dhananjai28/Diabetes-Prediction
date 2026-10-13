@@ -1,0 +1,24 @@
+/*
+prediction.css
+---------------
+Page-specific tweaks for the New Prediction form and result panel.
+The gauge ring, form sections, and risk pills are shared components from
+theme.css.
+*/
+
+.prediction-field-hint {
+  font-size: 0.78rem;
+  color: var(--color-muted);
+}
+
+.result-hero {
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  text-align: center;
+  background: var(--primary-bg);
+  border: 1px dashed var(--color-primary);
+}
+
+.gauge-wrap {
+  margin: 1.25rem 0 0.5rem;
+}

@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Complete Your Profile' if is_new else 'Edit Profile' }} - DiabetesCare AI{% endblock %}
+{% block page_title %}<i class="bi bi-person-vcard" aria-hidden="true"></i> {{ 'Complete Your Profile' if is_new else 'Edit Profile' }}{% endblock %}
+{% block page_subtitle %}This information personalizes your dashboard and PDF reports.{% endblock %}
+{% block extra_css %}<link href="{{ url_for('static', filename='css/profile.css') }}" rel="stylesheet">{% endblock %}
+
+{% block content %}
+<div class="card app-card">
+  <div class="card-body">
+    <form method="POST" action="{{ url_for('patient.edit') }}" id="profileForm">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      <div class="row g-4">
+        <div class="col-lg-6">
+          <!-- Personal Information -->
+          <div class="form-section mb-4">
+            <div class="form-section-head">
+              <i class="bi bi-person" aria-hidden="true"></i>
+              <div>Personal Information</div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="patient_name">Patient Name</label>
+              <input type="text" class="form-control" id="patient_name" name="patient_name" value="{{ values.patient_name or '' }}" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="gender">Gender</label>
+              <select class="form-select" id="gender" name="gender" required>
+                {% for g in genders %}
+                <option value="{{ g }}" {{ 'selected' if values.gender == g }}>{{ g }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Date of Birth</label>
+              <div class="row g-2">
+                <div class="col-4">
+                  <select class="form-select" name="year" id="dobYear" aria-label="Birth year">
+                    {% for y in range(current_year, min_year - 1, -1) %}
+                    <option value="{{ y }}" {{ 'selected' if values.year|string == y|string }}>{{ y }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="col-4">
+                  <select class="form-select" name="month" id="dobMonth" aria-label="Birth month">
+                    {% for m in range(1, 13) %}
+                    <option value="{{ '%02d'|format(m) }}" {{ 'selected' if values.month|string == '%02d'|format(m) }}>{{ '%02d'|format(m) }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="col-4">
+                  <select class="form-select" name="day" id="dobDay" aria-label="Birth day">
+                    {% for d in range(1, 32) %}
+                    <option value="{{ '%02d'|format(d) }}" {{ 'selected' if values.day|string == '%02d'|format(d) }}>{{ '%02d'|format(d) }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="mb-0">
+              <label class="form-label">Age (calculated automatically)</label>
+              <div class="form-control-plaintext data-font fs-5" id="ageDisplay" style="color:var(--primary-color);">-</div>
+            </div>
+          </div>
+
+          <!-- Medical Information -->
+          <div class="form-section">
+            <div class="form-section-head">
+              <i class="bi bi-activity" aria-hidden="true"></i>
+              <div>Medical Information</div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="blood_group">Blood Group</label>
+              <select class="form-select" id="blood_group" name="blood_group" required>
+                {% for bg in blood_groups %}
+                <option value="{{ bg }}" {{ 'selected' if values.blood_group == bg }}>{{ bg }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="row g-2 mb-3">
+              <div class="col-6">
+                <label class="form-label" for="heightInput">Height (cm)</label>
+                <input type="number" step="0.1" class="form-control" name="height" id="heightInput" value="{{ values.height or '' }}" required>
+              </div>
+              <div class="col-6">
+                <label class="form-label" for="weightInput">Weight (kg)</label>
+                <input type="number" step="0.1" class="form-control" name="weight" id="weightInput" value="{{ values.weight or '' }}" required>
+              </div>
+            </div>
+            <div class="mb-0">
+              <label class="form-label">BMI (calculated automatically)</label>
+              <div class="form-control-plaintext data-font fs-5" id="bmiDisplay" style="color:var(--primary-color);">-</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-6">
+          <!-- Contact Information -->
+          <div class="form-section mb-4">
+            <div class="form-section-head">
+              <i class="bi bi-telephone" aria-hidden="true"></i>
+              <div>Contact Information</div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="phone">Phone Number</label>
+              <input type="text" class="form-control" id="phone" name="phone" placeholder="10 digits" value="{{ values.phone or '' }}" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="email">Email Address</label>
+              <input type="email" class="form-control" id="email" name="email" value="{{ values.email or '' }}" required>
+            </div>
+            <div class="mb-0">
+              <label class="form-label" for="address">Address</label>
+              <textarea class="form-control" id="address" name="address" rows="3" required>{{ values.address or '' }}</textarea>
+            </div>
+          </div>
+
+          <!-- Emergency Contact -->
+          <div class="form-section">
+            <div class="form-section-head">
+              <i class="bi bi-shield-plus" aria-hidden="true"></i>
+              <div>Emergency Contact</div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="emergency_contact_name">Contact Name</label>
+              <input type="text" class="form-control" id="emergency_contact_name" name="emergency_contact_name" value="{{ values.emergency_contact_name or '' }}" required>
+            </div>
+            <div class="mb-0">
+              <label class="form-label" for="emergency_contact_number">Contact Number</label>
+              <input type="text" class="form-control" id="emergency_contact_number" name="emergency_contact_number" placeholder="10 digits" value="{{ values.emergency_contact_number or '' }}" required>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex flex-wrap gap-2 mt-4">
+        <button type="submit" class="btn btn-primary" id="saveProfileBtn"><i class="bi bi-check-lg" aria-hidden="true"></i> Save Profile</button>
+        <button type="reset" class="btn btn-outline-secondary" id="resetBtn"><i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i> Reset</button>
+        <a href="{{ url_for('patient.view') if not is_new else url_for('dashboard.home') }}" class="btn btn-outline-danger">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/profile.js') }}"></script>
+{% endblock %}

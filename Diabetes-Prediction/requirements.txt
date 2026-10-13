@@ -1,0 +1,30 @@
+# Core data science
+pandas>=2.2.0
+numpy>=1.26.0
+scikit-learn>=1.4.0
+joblib>=1.3.0
+
+# Visualization
+matplotlib>=3.8.0
+seaborn>=0.13.0
+Pillow>=10.0.0
+
+# Desktop GUI
+customtkinter>=5.2.2
+
+# Web app (webapp/) -- Flask, session auth, and CSRF protection.
+# Bootstrap 5, Bootstrap Icons, and Chart.js are loaded via CDN in
+# webapp/templates/base.html, so no pip packages are needed for those.
+Flask>=3.0.0
+Flask-Login>=0.6.3
+Flask-WTF>=1.2.1
+Werkzeug>=3.0.0
+
+# PDF report generation
+reportlab>=4.0.0
+
+# Notebook (optional, for notebooks/EDA.ipynb)
+jupyter>=1.0.0
+ipykernel>=6.29.0
+
+gunicorn

@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+{% block title %}Patient Profile - DiabetesCare AI{% endblock %}
+{% block page_title %}<i class="bi bi-person-vcard" aria-hidden="true"></i> Patient Profile{% endblock %}
+{% block page_subtitle %}Medical record card with your personal, medical and contact details.{% endblock %}
+
+{% set risk_text = {'Green': 'Low Risk', 'Yellow': 'Medium Risk', 'Red': 'High Risk'} %}
+
+{% block content %}
+<!-- Patient card header -->
+<div class="card app-card mb-4">
+  <div class="card-body">
+    <div class="d-flex flex-wrap align-items-center gap-3">
+      <div class="avatar-circle avatar-circle-lg">{{ profile.initials() }}</div>
+      <div>
+        <h4 class="mb-0">{{ profile.patient_name }}</h4>
+        <div class="text-muted small">Patient ID: <span class="data-font">{{ profile.username }}</span></div>
+      </div>
+      <a href="{{ url_for('patient.edit') }}" class="btn btn-primary ms-auto">
+        <i class="bi bi-pencil-square" aria-hidden="true"></i> Edit Profile
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Profile sections -->
+<div class="row g-4 mb-4">
+  <div class="col-lg-6">
+    <div class="profile-section h-100">
+      <h6 class="section-title"><i class="bi bi-person" aria-hidden="true"></i> Personal Information</h6>
+      <div class="info-grid">
+        <div class="row g-0">
+          <div class="col-6">
+            <div class="info-item">
+              <span class="field-label">Full Name</span>
+              <span class="field-value">{{ profile.patient_name }}</span>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="info-item">
+              <span class="field-label">Gender</span>
+              <span class="field-value">{{ profile.gender }}</span>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="info-item">
+              <span class="field-label">Date of Birth</span>
+              <span class="field-value">{{ profile.date_of_birth }}</span>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="info-item">
+              <span class="field-label">Age</span>
+              <span class="field-value data">{{ profile.age }} yrs</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="profile-section h-100">
+      <h6 class="section-title"><i class="bi bi-activity" aria-hidden="true"></i> Medical Information</h6>
+      <div class="info-grid">
+        <div class="row g-0">
+          <div class="col-6">
+            <div class="info-item">
+              <span class="field-label">Blood Group</span>
+              <span class="field-value">{{ profile.blood_group }}</span>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="info-item">
+              <span class="field-label">Height</span>
+              <span class="field-value data">{{ profile.height }} cm</span>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="info-item">
+              <span class="field-label">Weight</span>
+              <span class="field-value data">{{ profile.weight }} kg</span>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="info-item">
+              <span class="field-label">BMI</span>
+              <span class="field-value data">{{ profile.bmi }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="profile-section h-100">
+      <h6 class="section-title"><i class="bi bi-telephone" aria-hidden="true"></i> Contact Information</h6>
+      <div class="info-grid">
+        <div class="row g-0">
+          <div class="col-6">
+            <div class="info-item">
+              <span class="field-label">Phone Number</span>
+              <span class="field-value data">{{ profile.phone }}</span>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="info-item">
+              <span class="field-label">Email</span>
+              <span class="field-value">{{ profile.email }}</span>
+            </div>
+          </div>
+          <div class="col-12">
+            <div class="info-item">
+              <span class="field-label">Address</span>
+              <span class="field-value">{{ profile.address or '-' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="profile-section h-100">
+      <h6 class="section-title"><i class="bi bi-shield-plus" aria-hidden="true"></i> Emergency Contact</h6>
+      <div class="info-grid">
+        <div class="row g-0">
+          <div class="col-6">
+            <div class="info-item">
+              <span class="field-label">Contact Name</span>
+              <span class="field-value">{{ profile.emergency_contact_name or '-' }}</span>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="info-item">
+              <span class="field-label">Contact Number</span>
+              <span class="field-value data">{{ profile.emergency_contact_number or '-' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Stats -->
+<div class="row g-4 mb-4">
+  <div class="col-md-4">
+    <div class="card app-card stat-card">
+      <div class="card-body">
+        <div class="stat-icon icon-blue"><i class="bi bi-clipboard2-pulse" aria-hidden="true"></i></div>
+        <div>
+          <div class="stat-value data-font">{{ total }}</div>
+          <div class="stat-label">Total Predictions</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card app-card stat-card">
+      <div class="card-body">
+        <div class="stat-icon {{ 'icon-green' if latest and latest.risk_level == 'Green' else ('icon-yellow' if latest and latest.risk_level == 'Yellow' else 'icon-red') }}"><i class="bi bi-shield-exclamation" aria-hidden="true"></i></div>
+        <div>
+          <div class="stat-value">
+            {% if latest %}<span class="risk-badge risk-{{ latest.risk_level|lower }}">{{ risk_text.get(latest.risk_level, latest.risk_level) }}</span>{% else %}N/A{% endif %}
+          </div>
+          <div class="stat-label">Latest Prediction</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card app-card stat-card">
+      <div class="card-body">
+        <div class="stat-icon icon-teal"><i class="bi bi-graph-up-arrow" aria-hidden="true"></i></div>
+        <div>
+          <div class="stat-value data-font">{{ "%.1f"|format(avg_probability) }}%</div>
+          <div class="stat-label">Average Probability</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Quick actions -->
+<div class="card app-card">
+  <div class="card-body">
+    <h6 class="card-title"><i class="bi bi-lightning-charge" aria-hidden="true"></i> Quick Actions</h6>
+    <div class="quick-actions">
+      <a href="{{ url_for('prediction.new') }}" class="btn btn-primary"><i class="bi bi-clipboard2-pulse" aria-hidden="true"></i> New Prediction</a>
+      <a href="{{ url_for('history.list_view') }}" class="btn btn-outline-secondary"><i class="bi bi-clock-history" aria-hidden="true"></i> Prediction History</a>
+      <a href="{{ url_for('reports.picker') }}" class="btn btn-outline-secondary"><i class="bi bi-file-earmark-pdf" aria-hidden="true"></i> Generate Full Report</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

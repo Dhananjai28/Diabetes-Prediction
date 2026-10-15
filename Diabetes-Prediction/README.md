@@ -89,6 +89,24 @@ python app/main.py
 python -m unittest discover tests
 ```
 
+## 🌐 Render Web Deployment
+
+The Flask web app is deployed separately from the CustomTkinter desktop app.
+The Render Blueprint is in the repository root and points to this project
+directory. Create a Render Blueprint from the GitHub repository and apply
+`render.yaml`; Render generates `SECRET_KEY` automatically. The service uses
+the checked-in model and scaler artifacts and starts with Gunicorn.
+
+This configuration uses Render's free service plan. Its local SQLite database
+is stored at `/tmp/diabetes_app.db` and is ephemeral, so accounts and prediction
+history can be lost on restart or redeploy. To use a persistent Render disk
+later, set `DATABASE_PATH` to a file inside that disk's mount directory; the
+database layer creates the parent directory if needed. SQLite is intended for
+this single-instance educational demo, not multi-instance production traffic.
+
+The model uses a synthetic dataset. Predictions are for educational
+demonstration only and are not medical diagnoses or advice.
+
 ---
 
 ## 📁 Folder Structure

@@ -23,6 +23,11 @@ class TestWebappRoutes(unittest.TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertIn("/login", response.headers["Location"])
 
+    def test_health_endpoint(self):
+        response = self.client.get("/health")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get_json(), {"status": "ok"})
+
 
 if __name__ == "__main__":
     unittest.main()

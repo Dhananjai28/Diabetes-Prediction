@@ -17,6 +17,7 @@ of what validators.py already rejects at the UI layer.
 from __future__ import annotations
 
 import csv
+import os
 import sqlite3
 from contextlib import contextmanager
 from pathlib import Path
@@ -25,7 +26,11 @@ from typing import Any, Iterator
 from app.utils import format_timestamp, hash_password, setup_logger, verify_password
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
-DB_PATH = ROOT_DIR / "app" / "assets" / "diabetes_app.db"
+DB_PATH = (
+    Path(os.environ["DATABASE_PATH"])
+    if os.environ.get("DATABASE_PATH")
+    else ROOT_DIR / "app" / "assets" / "diabetes_app.db"
+)
 
 logger = setup_logger("database")
 

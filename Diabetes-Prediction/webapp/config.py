@@ -15,9 +15,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent  # project root (same as app/'
 
 
 class Config:
-    # In production, set the SECRET_KEY environment variable to a long
-    # random value -- this fallback is fine for local development only.
-    SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-key-change-in-production")
+    SECRET_KEY = os.environ.get("SECRET_KEY")
 
     WTF_CSRF_ENABLED = True
     TEMPLATES_AUTO_RELOAD = True
@@ -26,6 +24,10 @@ class Config:
     # handles "remember me" separately if added later.
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = "Lax"
+    SESSION_COOKIE_SECURE = (
+        os.environ.get("RENDER", "").lower() == "true"
+        or os.environ.get("FLASK_ENV", "").lower() == "production"
+    )
 
     # Where generated PDF reports are temporarily written before being
     # streamed to the browser and cleaned up (see webapp/reports.py).

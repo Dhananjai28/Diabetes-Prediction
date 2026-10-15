@@ -13,16 +13,13 @@ from __future__ import annotations
 
 import customtkinter as ctk
 
+from app.branding import BRAND_FULL_NAME, BRAND_ICON, BRAND_SHORT_NAME, BRAND_TAGLINE
+
 # --------------------------------------------------------------------------- #
 # Brand
 # --------------------------------------------------------------------------- #
 # Centralised here (not in main.py) so every screen pulls the same wording,
 # the same way every screen pulls the same colors below.
-
-BRAND_FULL_NAME = "Professional Diabetes Prediction & Patient Management System"
-BRAND_SHORT_NAME = "Diabetes Prediction"
-BRAND_TAGLINE = "Patient Management System"
-BRAND_ICON = "🩺"
 
 # --------------------------------------------------------------------------- #
 # Palette -- a clinical teal/navy scheme (professional medical-portal look)

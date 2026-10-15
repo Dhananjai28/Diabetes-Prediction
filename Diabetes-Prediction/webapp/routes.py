@@ -30,6 +30,11 @@ def index():
     return redirect(url_for("auth.login"))
 
 
+@root_bp.route("/health")
+def health():
+    return {"status": "ok"}
+
+
 @root_bp.route("/about")
 @login_required
 def about():

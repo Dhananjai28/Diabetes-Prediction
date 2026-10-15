@@ -89,23 +89,32 @@ python app/main.py
 python -m unittest discover tests
 ```
 
-## 🌐 Render Web Deployment
+## 🌐 Live Demo / Deployment
 
-The Flask web app is deployed separately from the CustomTkinter desktop app.
-The Render Blueprint is in the repository root and points to this project
-directory. Create a Render Blueprint from the GitHub repository and apply
-`render.yaml`; Render generates `SECRET_KEY` automatically. The service uses
-the checked-in model and scaler artifacts and starts with Gunicorn.
+**Live demo:** `https://<your-render-service>.onrender.com` (replace this
+placeholder with the URL Render assigns after deployment).
 
-This configuration uses Render's free service plan. Its local SQLite database
-is stored at `/tmp/diabetes_app.db` and is ephemeral, so accounts and prediction
-history can be lost on restart or redeploy. To use a persistent Render disk
-later, set `DATABASE_PATH` to a file inside that disk's mount directory; the
-database layer creates the parent directory if needed. SQLite is intended for
-this single-instance educational demo, not multi-instance production traffic.
+To deploy the Flask web app on Render:
 
-The model uses a synthetic dataset. Predictions are for educational
-demonstration only and are not medical diagnoses or advice.
+1. Push this project to a GitHub repository, including the trained
+   `model/diabetes_model.pkl` and `model/scaler.pkl` artifacts.
+2. In Render, choose **New + → Blueprint**, connect the repository, and
+   apply the settings in `render.yaml`.
+3. Render installs `requirements.txt`, starts the Flask app with Gunicorn,
+   generates `SECRET_KEY`, and checks `/health`. After deployment, copy the
+   public URL into the placeholder above.
+
+Only the Flask web app is deployed; the CustomTkinter desktop GUI is not
+served on Render. This educational project uses a synthetic dataset, and
+its predictions are not medical diagnoses or advice.
+
+On Render's free web-service plan, the service may take around a minute to
+wake after about 15 minutes without traffic. Its filesystem is ephemeral:
+SQLite account and prediction data can reset after a restart or redeploy.
+Do not use the free service for persistent or real patient data. To use a
+persistent Render disk later, set `DATABASE_PATH` to a file inside its mount
+directory; the database layer creates the parent directory. SQLite is intended
+for this single-instance educational demo, not multi-instance production use.
 
 ---
 

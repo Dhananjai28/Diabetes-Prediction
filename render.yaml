@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: diabetes-prediction
+    runtime: python
+    plan: free
+    rootDir: Diabetes-Prediction
+    buildCommand: pip install -r requirements.txt
+    startCommand: "gunicorn --bind 0.0.0.0:$PORT webapp.app:app"
+    healthCheckPath: /health
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true

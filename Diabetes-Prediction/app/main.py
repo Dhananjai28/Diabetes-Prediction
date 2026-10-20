@@ -52,7 +52,17 @@ if str(ROOT_DIR) not in sys.path:
 
 from app.database import Database, DatabaseError
 from app.predictor import DiabetesPredictor, ModelNotFoundError
-from app.profile import BLOOD_GROUPS, GENDERS, MIN_BIRTH_YEAR, PatientProfile, calculate_age, calculate_bmi
+from app.profile import (
+    BLOOD_GROUPS,
+    GENDERS,
+    MIN_BIRTH_YEAR,
+    OTHER_BLOOD_GROUP,
+    PatientProfile,
+    blood_group_form_values,
+    calculate_age,
+    calculate_bmi,
+    resolve_blood_group,
+)
 from app.report_generator import (
     generate_history_report,
     generate_prediction_report,
@@ -417,9 +427,13 @@ class ProfileFormWindow(ctk.CTkToplevel):
         form = ctk.CTkFrame(scroll, corner_radius=RADIUS, fg_color=c["surface"])
         form.pack(fill="x", pady=(0, 16))
 
-        def field_label(text: str) -> None:
-            ctk.CTkLabel(form, text=text, font=FONTS["body"], text_color=c["text"],
-                         anchor="w").pack(fill="x", padx=20, pady=(14, 2))
+        def field_label(text: str) -> ctk.CTkLabel:
+            label = ctk.CTkLabel(
+                form, text=text, font=FONTS["body"], text_color=c["text"],
+                anchor="w",
+            )
+            label.pack(fill="x", padx=20, pady=(14, 2))
+            return label
 
         field_label("Patient Name")
         self.name_entry = ctk.CTkEntry(form, height=36)
@@ -461,11 +475,21 @@ class ProfileFormWindow(ctk.CTkToplevel):
 
         field_label("Blood Group")
         self.blood_group_var = ctk.StringVar(value=BLOOD_GROUPS[0])
-        ctk.CTkOptionMenu(form, values=BLOOD_GROUPS, variable=self.blood_group_var).pack(
-            fill="x", padx=20
+        ctk.CTkOptionMenu(
+            form, values=BLOOD_GROUPS, variable=self.blood_group_var,
+            command=self._on_blood_group_change,
+        ).pack(fill="x", padx=20)
+        self.custom_blood_group_frame = ctk.CTkFrame(form, fg_color="transparent")
+        ctk.CTkLabel(
+            self.custom_blood_group_frame, text="Enter Blood Group",
+            font=FONTS["body"], text_color=c["text"], anchor="w",
+        ).pack(fill="x", pady=(10, 2))
+        self.custom_blood_group_entry = ctk.CTkEntry(
+            self.custom_blood_group_frame, height=36,
         )
+        self.custom_blood_group_entry.pack(fill="x")
+        self.phone_label = field_label("Phone Number")
 
-        field_label("Phone Number")
         self.phone_entry = ctk.CTkEntry(form, height=36, placeholder_text="10 digits")
         self.phone_entry.pack(fill="x", padx=20)
 
@@ -538,7 +562,10 @@ class ProfileFormWindow(ctk.CTkToplevel):
             self.day_var.set(d)
         except (ValueError, AttributeError):
             pass
-        self.blood_group_var.set(row["blood_group"])
+        blood_group, custom_blood_group = blood_group_form_values(row["blood_group"])
+        self.blood_group_var.set(blood_group)
+        self.custom_blood_group_entry.insert(0, custom_blood_group)
+        self._on_blood_group_change(blood_group, clear_when_hidden=False)
         self.phone_entry.insert(0, row["phone"])
         self.email_entry.insert(0, row["email"])
         self.height_entry.insert(0, str(row["height"]))
@@ -555,6 +582,8 @@ class ProfileFormWindow(ctk.CTkToplevel):
         self.address_entry.delete("1.0", "end")
         self.gender_var.set(GENDERS[0])
         self.blood_group_var.set(BLOOD_GROUPS[0])
+        self.custom_blood_group_entry.delete(0, "end")
+        self._on_blood_group_change(BLOOD_GROUPS[0])
         self.year_var.set(str(date.today().year))
         self.month_var.set("01")
         self.day_var.set("01")
@@ -568,6 +597,19 @@ class ProfileFormWindow(ctk.CTkToplevel):
             self.age_label_var.set(f"{calculate_age(date(y, m, d))} years")
         except ValueError:
             self.age_label_var.set("-")
+
+    def _on_blood_group_change(
+        self, selection: str, clear_when_hidden: bool = True
+    ) -> None:
+        if selection == OTHER_BLOOD_GROUP:
+            if not self.custom_blood_group_frame.winfo_manager():
+                self.custom_blood_group_frame.pack(
+                    fill="x", padx=20, before=self.phone_label
+                )
+        else:
+            self.custom_blood_group_frame.pack_forget()
+            if clear_when_hidden:
+                self.custom_blood_group_entry.delete(0, "end")
 
     def _recalculate_bmi(self) -> None:
         try:
@@ -584,6 +626,7 @@ class ProfileFormWindow(ctk.CTkToplevel):
             "year": self.year_var.get(), "month": self.month_var.get(),
             "day": self.day_var.get(),
             "blood_group": self.blood_group_var.get(),
+            "custom_blood_group": self.custom_blood_group_entry.get(),
             "phone": self.phone_entry.get(),
             "email": self.email_entry.get(),
             "height": self.height_entry.get(),
@@ -609,7 +652,9 @@ class ProfileFormWindow(ctk.CTkToplevel):
                 gender=values["gender"],
                 date_of_birth=dob.isoformat(),
                 age=calculate_age(dob),
-                blood_group=values["blood_group"],
+                blood_group=resolve_blood_group(
+                    values["blood_group"], values["custom_blood_group"]
+                ),
                 phone=values["phone"].strip(),
                 email=values["email"].strip(),
                 height=height,
@@ -1107,7 +1152,7 @@ class DashboardFrame(ctk.CTkFrame):
             ("🚻", "Gender", profile.gender),
             ("🎂", "Date of Birth", profile.date_of_birth),
             ("📅", "Age", f"{profile.age} years"),
-            ("🩸", "Blood Group", profile.blood_group),
+            ("🩸", "Blood Group", profile.blood_group or "-"),
             ("📱", "Phone Number", profile.phone),
             ("📧", "Email", profile.email),
             ("📏", "Height", f"{profile.height:g} cm"),

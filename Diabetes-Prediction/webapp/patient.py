@@ -16,8 +16,16 @@ from flask import Blueprint, current_app, flash, redirect, render_template, requ
 from flask_login import current_user, login_required
 
 from app.database import DatabaseError
-from app.profile import BLOOD_GROUPS, GENDERS, MIN_BIRTH_YEAR, calculate_age, calculate_bmi
-from app.profile import PatientProfile
+from app.profile import (
+    BLOOD_GROUPS,
+    GENDERS,
+    MIN_BIRTH_YEAR,
+    PatientProfile,
+    blood_group_form_values,
+    calculate_age,
+    calculate_bmi,
+    resolve_blood_group,
+)
 from app.validators import validate_profile_form
 
 patient_bp = Blueprint("patient", __name__, url_prefix="/profile")
@@ -25,11 +33,13 @@ patient_bp = Blueprint("patient", __name__, url_prefix="/profile")
 
 def _row_to_form_values(row) -> dict:
     year, month, day = row["date_of_birth"].split("-")
+    blood_group, custom_blood_group = blood_group_form_values(row["blood_group"])
     return {
         "patient_name": row["patient_name"],
         "gender": row["gender"],
         "year": year, "month": month, "day": day,
-        "blood_group": row["blood_group"],
+        "blood_group": blood_group,
+        "custom_blood_group": custom_blood_group,
         "phone": row["phone"],
         "email": row["email"],
         "height": row["height"],
@@ -77,6 +87,7 @@ def edit():
             "month": request.form.get("month", ""),
             "day": request.form.get("day", ""),
             "blood_group": request.form.get("blood_group", ""),
+            "custom_blood_group": request.form.get("custom_blood_group", ""),
             "phone": request.form.get("phone", ""),
             "email": request.form.get("email", ""),
             "height": request.form.get("height", ""),
@@ -105,7 +116,9 @@ def edit():
                 gender=values["gender"],
                 date_of_birth=dob.isoformat(),
                 age=calculate_age(dob),
-                blood_group=values["blood_group"],
+                blood_group=resolve_blood_group(
+                    values["blood_group"], values["custom_blood_group"]
+                ),
                 phone=values["phone"].strip(),
                 email=values["email"].strip(),
                 height=height,

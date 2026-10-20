@@ -13,7 +13,13 @@ import re
 from dataclasses import dataclass
 from datetime import date
 
-from app.profile import BLOOD_GROUPS, GENDERS
+from app.profile import (
+    GENDERS,
+    MAX_CUSTOM_BLOOD_GROUP_LENGTH,
+    NOT_SPECIFIED_BLOOD_GROUP,
+    OTHER_BLOOD_GROUP,
+    STANDARD_BLOOD_GROUPS,
+)
 
 # Clinically plausible ranges for each input feature: (min, max, label).
 # Used both to reject nonsense values and to populate helper text in the UI.
@@ -167,9 +173,28 @@ def validate_gender(value: str) -> ValidationResult:
     return ValidationResult(True, [])
 
 
-def validate_blood_group(value: str) -> ValidationResult:
-    if value not in BLOOD_GROUPS:
+def validate_blood_group(value: str, custom_value: str = "") -> ValidationResult:
+    if value == NOT_SPECIFIED_BLOOD_GROUP or value in STANDARD_BLOOD_GROUPS:
+        return ValidationResult(True, [])
+    if value != OTHER_BLOOD_GROUP:
         return ValidationResult(False, ["Select a valid blood group."])
+
+    custom_value = (custom_value or "").strip()
+    if not custom_value:
+        return ValidationResult(False, ["Enter a blood group for the Other option."])
+    if len(custom_value) > MAX_CUSTOM_BLOOD_GROUP_LENGTH:
+        return ValidationResult(
+            False,
+            [f"Custom blood group must be {MAX_CUSTOM_BLOOD_GROUP_LENGTH} characters or fewer."],
+        )
+    if (
+        sanitize_text(custom_value) != custom_value
+        or _reject_sql_injection(custom_value)
+        or any(ord(character) < 32 or ord(character) == 127 for character in custom_value)
+    ):
+        return ValidationResult(
+            False, ["Custom blood group contains disallowed characters."]
+        )
     return ValidationResult(True, [])
 
 
@@ -243,15 +268,17 @@ def validate_profile_form(values: dict[str, str]) -> ValidationResult:
     """Validate the full patient profile form at once.
 
     Expected keys: patient_name, gender, year, month, day, blood_group,
-    phone, email, height, weight, address, emergency_contact_name,
-    emergency_contact_number. Age and BMI are never validated directly —
-    they're always derived from date_of_birth / height+weight.
+    custom_blood_group, phone, email, height, weight, address,
+    emergency_contact_name, emergency_contact_number. Age and BMI are never
+    validated directly — they're always derived from date_of_birth / height+weight.
     """
     all_errors: list[str] = []
     for result in (
         validate_patient_name(values.get("patient_name", "")),
         validate_gender(values.get("gender", "")),
-        validate_blood_group(values.get("blood_group", "")),
+        validate_blood_group(
+            values.get("blood_group", ""), values.get("custom_blood_group", "")
+        ),
         validate_phone(values.get("phone", ""), "Phone number"),
         validate_email(values.get("email", "")),
         validate_height_cm(values.get("height", "")),

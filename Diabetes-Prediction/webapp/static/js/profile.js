@@ -59,12 +59,36 @@ document.addEventListener("DOMContentLoaded", function () {
   });
   updateBmi();
 
+  var bloodGroupEl = document.getElementById("blood_group");
+  var customBloodGroupContainer = document.getElementById("customBloodGroupContainer");
+  var customBloodGroupEl = document.getElementById("custom_blood_group");
+
+  function updateCustomBloodGroup(clearWhenHidden) {
+    if (!bloodGroupEl || !customBloodGroupContainer || !customBloodGroupEl) return;
+    var isOther = bloodGroupEl.value === "Other";
+    customBloodGroupContainer.hidden = !isOther;
+    customBloodGroupEl.disabled = !isOther;
+    customBloodGroupEl.required = isOther;
+    if (!isOther && clearWhenHidden) customBloodGroupEl.value = "";
+  }
+
+  if (bloodGroupEl) {
+    bloodGroupEl.addEventListener("change", function () {
+      updateCustomBloodGroup(true);
+    });
+  }
+  updateCustomBloodGroup(false);
+
   var resetBtn = document.getElementById("resetBtn");
   if (resetBtn) {
     resetBtn.addEventListener("click", function () {
       // native form reset happens first (type="reset"), then refresh the
       // derived displays on the next tick once fields have reverted
-      setTimeout(function () { updateAge(); updateBmi(); }, 0);
+      setTimeout(function () {
+        updateAge();
+        updateBmi();
+        updateCustomBloodGroup(false);
+      }, 0);
     });
   }
 });

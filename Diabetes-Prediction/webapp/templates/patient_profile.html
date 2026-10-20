@@ -75,6 +75,11 @@
                 <option value="{{ bg }}" {{ 'selected' if values.blood_group == bg }}>{{ bg }}</option>
                 {% endfor %}
               </select>
+              <div class="mt-2" id="customBloodGroupContainer" {% if values.blood_group != 'Other' %}hidden{% endif %}>
+                <label class="form-label" for="custom_blood_group">Enter Blood Group</label>
+                <input type="text" class="form-control" id="custom_blood_group" name="custom_blood_group"
+                       value="{{ values.custom_blood_group or '' }}" maxlength="50" autocomplete="off">
+              </div>
             </div>
             <div class="row g-2 mb-3">
               <div class="col-6">

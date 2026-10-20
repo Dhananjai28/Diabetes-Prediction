@@ -17,10 +17,39 @@ from dataclasses import dataclass
 from datetime import date
 
 GENDERS = ["Male", "Female", "Other"]
-BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "A1B+"]
+STANDARD_BLOOD_GROUPS = ("A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-")
+NOT_SPECIFIED_BLOOD_GROUP = "Not specified"
+OTHER_BLOOD_GROUP = "Other"
+MAX_CUSTOM_BLOOD_GROUP_LENGTH = 50
+BLOOD_GROUPS = [
+    NOT_SPECIFIED_BLOOD_GROUP,
+    *STANDARD_BLOOD_GROUPS,
+    OTHER_BLOOD_GROUP,
+]
 
 # Earliest selectable birth year in the profile form's date picker.
 MIN_BIRTH_YEAR = 1900
+
+
+def blood_group_form_values(value: str | None) -> tuple[str, str]:
+    """Return the dropdown choice and custom text for a stored blood group."""
+    value = value or ""
+    if not value:
+        return NOT_SPECIFIED_BLOOD_GROUP, ""
+    if value in STANDARD_BLOOD_GROUPS:
+        return value, ""
+    return OTHER_BLOOD_GROUP, value
+
+
+def resolve_blood_group(selection: str, custom_value: str = "") -> str:
+    """Convert profile form fields to the single value stored in the database."""
+    if selection == NOT_SPECIFIED_BLOOD_GROUP:
+        return ""
+    if selection == OTHER_BLOOD_GROUP:
+        return custom_value.strip()
+    if selection in STANDARD_BLOOD_GROUPS:
+        return selection
+    raise ValueError("Select a valid blood group.")
 
 
 def calculate_age(dob: date, as_of: date | None = None) -> int:
